@@ -1,22 +1,32 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import { signinStart,signinSuccess,signinFailure } from "../redux/user/userSlice.js";
+
+
 
 const SignIn = () => {
   const [formData, setFormData] = useState({});
-  const [error, setError] = useState(null);
-  const [Loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+  const dispatch=useDispatch();
+
+  const {error,loading}=useSelector((state)=>state.user);
+
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+
     try {
-      setLoading(true);
+       dispatch(signinStart());
       const { data } = await axios.post("/api/auth/signin", formData, {
         headers: {
           "Content-Type": "application/json",
@@ -26,26 +36,29 @@ const SignIn = () => {
     
 
       if (data.success === false) {
-        setError(data.message);
-        setLoading(false);
+       
+        dispatch(signinFailure(data.message));
         return;
       }
 
       // ✅ Add this line here — clears the form after successful signup
       setFormData({ email: "", password: "" });
 
-      setLoading(false);
-      setError(null);
+        dispatch(signinSuccess(data));
       navigate("/");
     } 
     catch (error) {
-      setLoading(false);
+     
 
-      if (error.response && error.response.data) {
-        setError(error.response.data.message);
-      } else {
-        setError(error.message);
-      }
+
+      const message=error.response && error.response.data ? error.response.data.message : error.message;
+      dispatch(signinFailure(message));
+
+      // if (error.response && error.response.data) {
+      //   setError(error.response.data.message);
+      // } else {
+      //   setError(error.message);
+      // }
     }
   };
 
@@ -70,11 +83,11 @@ const SignIn = () => {
             className="border p-3 rounded-lg bg-white border-none outline-none "
           />
           <button
-            disabled={Loading}
+            disabled={loading}
             type="submit"
             className="bg-slate-700 uppercase text-white cursor-pointer p-3 rounded-lg font-semibold hover:opacity-95 disabled:opacity-80"
           >
-            {Loading ? "Loading" : "Sign In"}
+            {loading ? "Loading" : "Sign In"}
           </button>
         </form>
         <div className="flex gap-2 mt-5 ">
