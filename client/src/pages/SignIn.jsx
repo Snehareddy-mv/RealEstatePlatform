@@ -2,41 +2,36 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
-import { signinStart,signinSuccess,signinFailure } from "../redux/user/userSlice.js";
-
-
+import {
+  signinStart,
+  signinSuccess,
+  signinFailure,
+} from "../redux/user/userSlice.js";
 
 const SignIn = () => {
   const [formData, setFormData] = useState({});
 
   const navigate = useNavigate();
-  const dispatch=useDispatch();
+  const dispatch = useDispatch();
 
-  const {error,loading}=useSelector((state)=>state.user);
-
+  const { error, loading } = useSelector((state) => state.user);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
-
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-
     try {
-       dispatch(signinStart());
+      dispatch(signinStart());
       const { data } = await axios.post("/api/auth/signin", formData, {
         headers: {
           "Content-Type": "application/json",
         },
       });
 
-    
-
       if (data.success === false) {
-       
         dispatch(signinFailure(data.message));
         return;
       }
@@ -44,14 +39,13 @@ const SignIn = () => {
       // ✅ Add this line here — clears the form after successful signup
       setFormData({ email: "", password: "" });
 
-        dispatch(signinSuccess(data));
+      dispatch(signinSuccess(data));
       navigate("/");
-    } 
-    catch (error) {
-     
-
-
-      const message=error.response && error.response.data ? error.response.data.message : error.message;
+    } catch (error) {
+      const message =
+        error.response && error.response.data
+          ? error.response.data.message
+          : error.message;
       dispatch(signinFailure(message));
 
       // if (error.response && error.response.data) {
@@ -67,7 +61,6 @@ const SignIn = () => {
       <div className="p-3 max-w-md mx-auto ">
         <h1 className="text-3xl font-semibold text-center my-7">Sign Up</h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        
           <input
             onChange={handleChange}
             type="email"
